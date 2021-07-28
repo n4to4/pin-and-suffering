@@ -4,6 +4,7 @@ use std::{
     task::{Context, Poll},
     time::Duration,
 };
+use tokio::time::Sleep;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
@@ -11,12 +12,14 @@ async fn main() {
 }
 
 struct MyFuture {
-    slept: bool,
+    sleep: Pin<Box<Sleep>>,
 }
 
 impl MyFuture {
     fn new() -> Self {
-        Self { slept: false }
+        Self {
+            sleep: Box::pin(tokio::time::sleep(Duration::from_secs(1))),
+        }
     }
 }
 
@@ -25,18 +28,7 @@ impl Future for MyFuture {
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         println!("MyFuture::poll");
-
-        match self.slept {
-            false => {
-                let waker = cx.waker().clone();
-                std::thread::spawn(move || {
-                    std::thread::sleep(Duration::from_secs(1));
-                    waker.wake();
-                });
-                self.slept = true;
-                Poll::Pending
-            }
-            true => Poll::Ready(()),
-        }
+        let sleep = Pin::new(&mut self.sleep);
+        sleep.poll(cx)
     }
 }
