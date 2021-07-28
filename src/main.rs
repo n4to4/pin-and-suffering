@@ -1,6 +1,7 @@
-use std::{thread::sleep, time::Duration};
+use std::time::Duration;
+use tokio::time::sleep;
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     let one = tokio::spawn(greet());
     let two = tokio::spawn(greet());
@@ -9,6 +10,6 @@ async fn main() {
 
 async fn greet() {
     println!("Hello!");
-    sleep(Duration::from_millis(500));
+    sleep(Duration::from_millis(500)).await;
     println!("Goodbye!");
 }
