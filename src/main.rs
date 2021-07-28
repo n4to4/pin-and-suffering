@@ -1,15 +1,20 @@
-use std::time::Duration;
-use tokio::time::sleep;
+use std::{
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
-    let one = tokio::spawn(greet());
-    let two = tokio::spawn(greet());
-    let (_, _) = tokio::join!(one, two);
+    todo!()
 }
 
-async fn greet() {
-    println!("Hello!");
-    sleep(Duration::from_millis(500)).await;
-    println!("Goodbye!");
+struct MyFuture {}
+
+impl Future for MyFuture {
+    type Output = ();
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        todo!()
+    }
 }
