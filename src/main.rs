@@ -28,7 +28,6 @@ impl Future for MyFuture {
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         println!("MyFuture::poll");
-        let sleep = Pin::new(&mut self.sleep);
-        sleep.poll(cx)
+        self.sleep.as_mut().poll(cx)
     }
 }
