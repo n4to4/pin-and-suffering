@@ -14,10 +14,10 @@ use tokio::{
 async fn main() -> Result<(), tokio::io::Error> {
     let mut buf = vec![0u8; 128 * 1024];
     let f = File::open("/dev/urandom").await?;
+    let mut f = SlowRead::new(f);
 
-    let f = SlowRead::new(f);
     {
-        pin_utils::pin_mut!(f);
+        let mut f = unsafe { Pin::new_unchecked(&mut f) };
 
         let before = Instant::now();
         f.read_exact(&mut buf).await?;
