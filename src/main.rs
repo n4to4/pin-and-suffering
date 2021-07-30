@@ -1,4 +1,4 @@
-use futures::FutureExt;
+use futures::Future;
 use std::{
     pin::Pin,
     task::{Context, Poll},
@@ -74,7 +74,7 @@ where
             )
         };
 
-        match sleep.poll_unpin(cx) {
+        match sleep.as_mut().poll(cx) {
             Poll::Ready(_) => {
                 sleep.reset(Instant::now() + Duration::from_millis(25));
                 reader.poll_read(cx, buf)
