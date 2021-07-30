@@ -22,6 +22,10 @@ async fn main() -> Result<(), tokio::io::Error> {
     sr.read_exact(&mut buf).await?;
     println!("Read {} bytes in {:?}", buf.len(), before.elapsed());
 
+    let before = Instant::now();
+    f.read_exact(&mut buf).await?;
+    println!("Read {} bytes in {:?}", buf.len(), before.elapsed());
+
     Ok(())
 }
 
