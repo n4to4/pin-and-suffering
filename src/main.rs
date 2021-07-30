@@ -16,7 +16,7 @@ async fn main() -> Result<(), tokio::io::Error> {
     let f = SlowRead::new(File::open("/dev/urandom").await?);
     let before = Instant::now();
 
-    pin_utils::pin_mut!(f);
+    let mut f = Box::pin(f);
     f.read_exact(&mut buf).await?;
 
     println!("Read {} bytes in {:?}", buf.len(), before.elapsed());
