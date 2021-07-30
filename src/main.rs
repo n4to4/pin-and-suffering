@@ -22,14 +22,14 @@ async fn main() -> Result<(), tokio::io::Error> {
 }
 
 struct SlowRead<R> {
-    reader: Pin<Box<R>>,
+    reader: R,
     sleep: Pin<Box<Sleep>>,
 }
 
 impl<R> SlowRead<R> {
     fn new(reader: R) -> Self {
         Self {
-            reader: Box::pin(reader),
+            reader: reader,
             sleep: Box::pin(tokio::time::sleep(Default::default())),
         }
     }
@@ -37,7 +37,7 @@ impl<R> SlowRead<R> {
 
 impl<R> AsyncRead for SlowRead<R>
 where
-    R: AsyncRead,
+    R: AsyncRead + Unpin,
 {
     fn poll_read(
         mut self: Pin<&mut Self>,
@@ -49,7 +49,7 @@ where
                 self.sleep
                     .as_mut()
                     .reset(Instant::now() + Duration::from_millis(25));
-                self.reader.as_mut().poll_read(cx, buf)
+                Pin::new(&mut self.reader).poll_read(cx, buf)
             }
             Poll::Pending => Poll::Pending,
         }
