@@ -13,10 +13,10 @@ use tokio::{
 #[tokio::main]
 async fn main() -> Result<(), tokio::io::Error> {
     let mut buf = vec![0u8; 128 * 1024];
-    let mut f = SlowRead::new(File::open("/dev/urandom").await?);
+    let f = SlowRead::new(File::open("/dev/urandom").await?);
     let before = Instant::now();
 
-    let mut f = unsafe { Pin::new_unchecked(&mut f) };
+    pin_utils::pin_mut!(f);
     f.read_exact(&mut buf).await?;
 
     println!("Read {} bytes in {:?}", buf.len(), before.elapsed());
