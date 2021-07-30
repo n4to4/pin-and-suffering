@@ -13,14 +13,18 @@ use tokio::{
 #[tokio::main]
 async fn main() -> Result<(), tokio::io::Error> {
     let mut buf = vec![0u8; 128 * 1024];
-    let mut f = File::open("/dev/urandom").await?;
+    let f = File::open("/dev/urandom").await?;
 
-    let sr = SlowRead::new(&mut f);
-    pin_utils::pin_mut!(sr);
+    let f = SlowRead::new(f);
+    {
+        pin_utils::pin_mut!(f);
 
-    let before = Instant::now();
-    sr.read_exact(&mut buf).await?;
-    println!("Read {} bytes in {:?}", buf.len(), before.elapsed());
+        let before = Instant::now();
+        f.read_exact(&mut buf).await?;
+        println!("Read {} bytes in {:?}", buf.len(), before.elapsed());
+    }
+
+    let mut f = f.into_inner();
 
     let before = Instant::now();
     f.read_exact(&mut buf).await?;
@@ -40,6 +44,15 @@ impl<R> SlowRead<R> {
             reader,
             sleep: tokio::time::sleep(Default::default()),
         }
+    }
+}
+
+impl<R> SlowRead<R>
+where
+    R: Unpin,
+{
+    fn into_inner(self) -> R {
+        self.reader
     }
 }
 
